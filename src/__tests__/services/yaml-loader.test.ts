@@ -8,22 +8,39 @@ scenarios:
     name: シナリオA vs シナリオB
     file: comparison_results.csv
     description: 同一環境での2つの実装の性能比較
+    target_a_name: シナリオA
+    target_b_name: シナリオB
+    metrics:
+      - id: throughput
+        name: スループット
+        unit: req/s
+        higher_is_better: true
+      - id: latency
+        name: レイテンシー
+        unit: ms
+        higher_is_better: false
+    parameters:
+      parameter_1:
+        name: パラメータ1
+        unit: unit1
+      parameter_2:
+        name: パラメータ2
+        unit: unit2
   - id: config-comparison
     name: 設定値による性能比較
     file: config_comparison.csv
     description: 異なる設定値での性能差を比較
-
-metrics:
-  - id: throughput
-    name: スループット
-    scenario_a_column: "Scenario A - Throughput"
-    scenario_b_column: "Scenario B - Throughput"
-    unit: req/s
-  - id: latency
-    name: レイテンシー
-    scenario_a_column: "Scenario A - Latency"
-    scenario_b_column: "Scenario B - Latency"
-    unit: ms
+    target_a_name: 設定A
+    target_b_name: 設定B
+    metrics:
+      - id: throughput
+        name: スループット
+        unit: req/s
+        higher_is_better: true
+    parameters:
+      config_param:
+        name: 設定パラメータ
+        unit: value
 
 column_mappings:
   - file: comparison_results.csv
@@ -52,8 +69,11 @@ describe('YAML読み込み機能', () => {
         const config = result.data
         expect(config.scenarios).toHaveLength(2)
         expect(config.scenarios[0].id).toBe('scenario-a-vs-b')
-        expect(config.metrics).toHaveLength(2)
-        expect(config.metrics[0].id).toBe('throughput')
+        expect(config.scenarios[0].target_a_name).toBe('シナリオA')
+        expect(config.scenarios[0].target_b_name).toBe('シナリオB')
+        expect(config.scenarios[0].metrics).toHaveLength(2)
+        expect(config.scenarios[0].metrics[0].id).toBe('throughput')
+        expect(config.scenarios[0].parameters).toHaveProperty('parameter_1')
         expect(config.column_mappings).toHaveLength(1)
       }
     })

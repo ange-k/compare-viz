@@ -2,27 +2,28 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ScenarioSelector } from '@/components/filters/ScenarioSelector'
 import type { IScenario } from '@/types'
+import { createMockScenario } from '@/__tests__/test-helpers'
 
 describe('ScenarioSelector', () => {
   const mockScenarios: IScenario[] = [
-    {
+    createMockScenario({
       id: 'scenario-1',
       name: 'シナリオ1',
       file: 'scenario1.csv',
       description: 'テストシナリオ1の説明',
-    },
-    {
+    }),
+    createMockScenario({
       id: 'scenario-2',
       name: 'シナリオ2',
       file: 'scenario2.csv',
       description: 'テストシナリオ2の説明',
-    },
-    {
+    }),
+    createMockScenario({
       id: 'scenario-3',
       name: 'シナリオ3',
       file: 'scenario3.csv',
       description: 'テストシナリオ3の説明',
-    },
+    }),
   ]
 
   it('シナリオのリストを表示する', () => {

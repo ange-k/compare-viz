@@ -50,7 +50,7 @@ export function validateYamlConfig(
       return {
         success: false,
         error: new Error(
-          `Invalid scenario: missing required fields (id, name, file, description)`
+          `Invalid scenario: missing required fields`
         ),
       }
     }
@@ -63,36 +63,35 @@ export function validateYamlConfig(
     }
     scenarioIds.add(scenario.id)
     scenarioFiles.add(scenario.file)
-  }
 
-  // metricsの検証
-  if (!Array.isArray(config.metrics)) {
-    return {
-      success: false,
-      error: new Error('metrics must be an array'),
+    // シナリオ内のメトリクスの検証
+    const metricIds = new Set<string>()
+    for (const metric of scenario.metrics) {
+      if (!isValidMetric(metric)) {
+        return {
+          success: false,
+          error: new Error(
+            `Invalid metric in scenario ${scenario.id}: missing required fields`
+          ),
+        }
+      }
+
+      if (metricIds.has(metric.id)) {
+        return {
+          success: false,
+          error: new Error(`Duplicate metric ID in scenario ${scenario.id}: ${metric.id}`),
+        }
+      }
+      metricIds.add(metric.id)
     }
-  }
 
-  // メトリクスの重複IDチェック
-  const metricIds = new Set<string>()
-
-  for (const metric of config.metrics) {
-    if (!isValidMetric(metric)) {
+    // パラメータの検証
+    if (!isValidParameters(scenario.parameters)) {
       return {
         success: false,
-        error: new Error(
-          `Invalid metric: missing required fields (id, name, scenario_a_column, scenario_b_column, unit)`
-        ),
+        error: new Error(`Invalid parameters in scenario ${scenario.id}`),
       }
     }
-
-    if (metricIds.has(metric.id)) {
-      return {
-        success: false,
-        error: new Error(`Duplicate metric ID: ${metric.id}`),
-      }
-    }
-    metricIds.add(metric.id)
   }
 
   // column_mappingsの検証
@@ -138,6 +137,10 @@ function isValidScenario(scenario: unknown): scenario is {
   name: string
   file: string
   description: string
+  target_a_name: string
+  target_b_name: string
+  metrics: unknown[]
+  parameters: unknown
 } {
   if (typeof scenario !== 'object' || scenario === null) {
     return false
@@ -148,7 +151,13 @@ function isValidScenario(scenario: unknown): scenario is {
     typeof s.id === 'string' &&
     typeof s.name === 'string' &&
     typeof s.file === 'string' &&
-    typeof s.description === 'string'
+    typeof s.description === 'string' &&
+    typeof s.target_a_name === 'string' &&
+    typeof s.target_b_name === 'string' &&
+    Array.isArray(s.metrics) &&
+    s.metrics.length > 0 &&
+    typeof s.parameters === 'object' &&
+    s.parameters !== null
   )
 }
 
@@ -158,9 +167,8 @@ function isValidScenario(scenario: unknown): scenario is {
 function isValidMetric(metric: unknown): metric is {
   id: string
   name: string
-  scenario_a_column: string
-  scenario_b_column: string
   unit: string
+  higher_is_better: boolean
 } {
   if (typeof metric !== 'object' || metric === null) {
     return false
@@ -170,10 +178,33 @@ function isValidMetric(metric: unknown): metric is {
   return (
     typeof m.id === 'string' &&
     typeof m.name === 'string' &&
-    typeof m.scenario_a_column === 'string' &&
-    typeof m.scenario_b_column === 'string' &&
-    typeof m.unit === 'string'
+    typeof m.unit === 'string' &&
+    typeof m.higher_is_better === 'boolean'
   )
+}
+
+/**
+ * パラメータオブジェクトの妥当性チェック
+ */
+function isValidParameters(parameters: unknown): boolean {
+  if (typeof parameters !== 'object' || parameters === null) {
+    return false
+  }
+
+  const params = parameters as Record<string, unknown>
+  
+  // 各パラメータが正しい形式か確認
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value !== 'object' || value === null) {
+      return false
+    }
+    const param = value as Record<string, unknown>
+    if (typeof param.name !== 'string' || typeof param.unit !== 'string') {
+      return false
+    }
+  }
+
+  return true
 }
 
 /**

@@ -37,6 +37,7 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
     selectedMetric: '',
     parameters: {},
   })
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // 初期データ読み込み
   useEffect(() => {
@@ -74,9 +75,10 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
           // デフォルトフィルターを設定
           setFilter({
             selectedScenario: scenario.id,
-            selectedMetric: yamlResult.data.metrics[0]?.id || '',
+            selectedMetric: scenario.metrics[0]?.id || '',
             parameters: {},
           })
+          setIsInitialLoad(false)
         }
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))
@@ -119,7 +121,8 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
         setFilteredData(queryResult.data)
 
         // 比較データを計算
-        const metric = config.metrics.find(m => m.id === filter.selectedMetric)
+        const scenario = config.scenarios.find(s => s.id === filter.selectedScenario)
+        const metric = scenario?.metrics.find(m => m.id === filter.selectedMetric)
         if (metric && queryResult.data.length > 0) {
           // フラットデータから平均値を計算
           const scenarioAKey = `scenario_a_${filter.selectedMetric}` as keyof IFlatTestResult
@@ -155,7 +158,7 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
         if (queryResult.data.length > 0) {
           const chartResult = prepareChartData(
             queryResult.data as any,
-            config.metrics.find(m => m.id === filter.selectedMetric)!,
+            metric!,
             'parameter_1'
           )
           if (chartResult.success) {
@@ -170,16 +173,60 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
     filterData()
   }, [data, config, filter])
 
+  // シナリオ変更時の処理
+  useEffect(() => {
+    const loadScenarioData = async () => {
+      if (!config || !filter.selectedScenario || isInitialLoad) return
+      
+      const scenario = config.scenarios.find(s => s.id === filter.selectedScenario)
+      if (!scenario) return
+      
+      try {
+        setLoading(true)
+        
+        // 新しいCSVを読み込む
+        const csvResult = await loadCsvFile(`/${scenario.file}`)
+        if (!csvResult.success) {
+          throw csvResult.error
+        }
+        
+        // データを正規化
+        const transformResult = transformCsvToNormalizedData(
+          csvResult.data,
+          config,
+          scenario.id
+        )
+        if (!transformResult.success) {
+          throw transformResult.error
+        }
+        
+        setData(transformResult.data)
+        
+        // シナリオのメトリクスから最初のメトリクスを選択
+        if (scenario.metrics.length > 0 && !scenario.metrics.find(m => m.id === filter.selectedMetric)) {
+          setFilter(prev => ({ ...prev, selectedMetric: scenario.metrics[0].id }))
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to load scenario data'))
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadScenarioData()
+  }, [config, filter.selectedScenario, isInitialLoad])
+
   // フィルター更新
   const updateFilter = (newFilter: Partial<IFilter>) => {
     setFilter(prev => ({ ...prev, ...newFilter }))
   }
 
   // 利用可能なフィルター
+  const selectedScenario = config?.scenarios.find(s => s.id === filter.selectedScenario)
   const availableFilters = {
     scenarios: config?.scenarios || [],
     parameters: data ? extractAvailableFilters(data).parameters : {},
-    metrics: config?.metrics || [],
+    metrics: selectedScenario?.metrics || [],
   }
 
   // クリーンアップ

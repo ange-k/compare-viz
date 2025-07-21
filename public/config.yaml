@@ -1,52 +1,108 @@
-scenarios:
-  - id: load-test-comparison
-    name: 負荷試験シナリオ比較
-    file: data/load_test_results.csv
-    description: 2つの実装パターンの負荷試験結果を比較
-    scenario_a_name: 実装パターンA
-    scenario_b_name: 実装パターンB（最適化版）
+title: システム性能比較ダッシュボード
+description: 異なるシステムやツールの性能を比較・可視化するためのダッシュボード
 
-metrics:
-  - id: throughput
-    name: スループット
-    scenario_a_column: "Scenario A - Throughput"
-    scenario_b_column: "Scenario B - Throughput"
-    unit: req/s
-    higher_is_better: true
-  - id: latency
-    name: レイテンシー
-    scenario_a_column: "Scenario A - Latency"
-    scenario_b_column: "Scenario B - Latency"
-    unit: ms
-    higher_is_better: false
-  - id: error_rate
-    name: エラー率
-    scenario_a_column: "Scenario A - Error Rate"
-    scenario_b_column: "Scenario B - Error Rate"
-    unit: "%"
-    higher_is_better: false
+scenarios:
+  - id: pulsar-vs-kafka
+    name: メッセージングシステム比較
+    file: data/pulsar_vs_kafka.csv
+    description: Apache Pulsar と Apache Kafka の負荷試験結果を比較
+    target_a_name: Apache Pulsar
+    target_b_name: Apache Kafka
+    metrics:
+      - id: produce_rate
+        name: プロデュースレート
+        unit: msg/s
+        higher_is_better: true
+      - id: latency_p50
+        name: レイテンシー (P50)
+        unit: ms
+        higher_is_better: false
+      - id: latency_p99
+        name: レイテンシー (P99)
+        unit: ms
+        higher_is_better: false
+      - id: cpu_usage
+        name: CPU使用率
+        unit: "%"
+        higher_is_better: false
+      - id: memory_usage
+        name: メモリ使用量
+        unit: MB
+        higher_is_better: false
+    parameters:
+      parameter_1:
+        name: プロデューサー数
+        unit: instances
+      parameter_2:
+        name: コンシューマー数
+        unit: instances
+      parameter_3:
+        name: パーティション数
+        unit: partitions
+  - id: postgres-vs-mysql
+    name: データベース比較
+    file: data/database_comparison.csv
+    description: PostgreSQL と MySQL の負荷試験結果を比較
+    target_a_name: PostgreSQL
+    target_b_name: MySQL
+    metrics:
+      - id: qps
+        name: クエリ/秒
+        unit: qps
+        higher_is_better: true
+      - id: latency_p50
+        name: レイテンシー (P50)
+        unit: ms
+        higher_is_better: false
+      - id: latency_p99
+        name: レイテンシー (P99)
+        unit: ms
+        higher_is_better: false
+      - id: error_rate
+        name: エラー率
+        unit: "%"
+        higher_is_better: false
+    parameters:
+      parameter_1:
+        name: コネクション数
+        unit: connections
+      parameter_2:
+        name: スレッド数
+        unit: threads
+      parameter_3:
+        name: クエリ複雑度
+        unit: ""
+
 
 column_mappings:
-  - file: data/load_test_results.csv
+  - file: data/pulsar_vs_kafka.csv
     mappings:
       test_condition: test_condition
-      parameter_1: parameter_1
-      parameter_2: parameter_2
-      parameter_3: parameter_3
-      scenario_a_throughput: "Scenario A - Throughput"
-      scenario_b_throughput: "Scenario B - Throughput"
-      scenario_a_latency: "Scenario A - Latency"
-      scenario_b_latency: "Scenario B - Latency"
-      scenario_a_error_rate: "Scenario A - Error Rate"
-      scenario_b_error_rate: "Scenario B - Error Rate"
+      parameter_1: producers
+      parameter_2: consumers
+      parameter_3: partitions
+      scenario_a_produce_rate: pulsar_produce_rate
+      scenario_b_produce_rate: kafka_produce_rate
+      scenario_a_latency_p50: pulsar_latency_p50
+      scenario_b_latency_p50: kafka_latency_p50
+      scenario_a_latency_p99: pulsar_latency_p99
+      scenario_b_latency_p99: kafka_latency_p99
+      scenario_a_cpu_usage: pulsar_cpu_usage
+      scenario_b_cpu_usage: kafka_cpu_usage
+      scenario_a_memory_usage: pulsar_memory_usage
+      scenario_b_memory_usage: kafka_memory_usage
+  - file: data/database_comparison.csv
+    mappings:
+      test_condition: test_condition
+      parameter_1: connections
+      parameter_2: threads
+      parameter_3: query_complexity
+      scenario_a_qps: postgres_qps
+      scenario_b_qps: mysql_qps
+      scenario_a_latency_p50: postgres_latency_p50
+      scenario_b_latency_p50: mysql_latency_p50
+      scenario_a_latency_p99: postgres_latency_p99
+      scenario_b_latency_p99: mysql_latency_p99
+      scenario_a_error_rate: postgres_error_rate
+      scenario_b_error_rate: mysql_error_rate
 
-parameters:
-  parameter_1:
-    name: 同時接続数
-    unit: connections
-  parameter_2:
-    name: ワーカースレッド数
-    unit: threads
-  parameter_3:
-    name: バッチサイズ
-    unit: items

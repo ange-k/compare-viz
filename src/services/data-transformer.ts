@@ -86,7 +86,7 @@ export function normalizeData(
       const scenarioA: ITestResult['scenarioA'] = {}
       const scenarioB: ITestResult['scenarioB'] = {}
 
-      for (const metric of yamlConfig.metrics) {
+      for (const metric of scenario.metrics) {
         // マッピング後のカラム名を使用
         const aColumnKey = `scenario_a_${metric.id}`
         const bColumnKey = `scenario_b_${metric.id}`
@@ -113,7 +113,7 @@ export function normalizeData(
     }
 
     // 利用可能なメトリクス
-    const availableMetrics = yamlConfig.metrics.map((m) => m.id)
+    const availableMetrics = scenario.metrics.map((m) => m.id)
 
     return {
       success: true,

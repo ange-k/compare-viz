@@ -6,6 +6,7 @@ import type {
   IAppState,
   TResultStatus,
 } from '@/types/internal-model'
+import { createMockYamlConfig } from '../test-helpers'
 
 describe('内部データモデル型定義', () => {
   describe('IFilter', () => {
@@ -138,11 +139,7 @@ describe('内部データモデル型定義', () => {
 
     it('データ読み込み完了後の状態が型定義に適合する', () => {
       const appState: IAppState = {
-        yamlConfig: {
-          scenarios: [],
-          metrics: [],
-          column_mappings: [],
-        },
+        yamlConfig: createMockYamlConfig(),
         currentData: {
           scenarioId: 'scenario-a-vs-b',
           results: [],

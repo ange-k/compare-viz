@@ -8,23 +8,20 @@ describe('MetricSelector', () => {
     {
       id: 'throughput',
       name: 'スループット',
-      scenario_a_column: 'scenario_a_throughput',
-      scenario_b_column: 'scenario_b_throughput',
       unit: 'req/s',
+      higher_is_better: true,
     },
     {
       id: 'latency',
       name: 'レイテンシー',
-      scenario_a_column: 'scenario_a_latency',
-      scenario_b_column: 'scenario_b_latency',
       unit: 'ms',
+      higher_is_better: false,
     },
     {
       id: 'error_rate',
       name: 'エラー率',
-      scenario_a_column: 'scenario_a_error_rate',
-      scenario_b_column: 'scenario_b_error_rate',
       unit: '%',
+      higher_is_better: false,
     },
   ]
 

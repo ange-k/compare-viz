@@ -25,7 +25,7 @@ function App() {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout title={config?.title} description={config?.description}>
         <Loading />
       </Layout>
     )
@@ -33,17 +33,22 @@ function App() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout title={config?.title} description={config?.description}>
         <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
       </Layout>
     )
   }
 
   const selectedScenario = config?.scenarios.find(s => s.id === filter.selectedScenario)
-  const selectedMetric = config?.metrics.find(m => m.id === filter.selectedMetric)
+  const selectedMetric = selectedScenario?.metrics.find(m => m.id === filter.selectedMetric)
+  
+  // パラメータ定義を取得
+  const getParameterInfo = (paramKey: string) => {
+    return selectedScenario?.parameters?.[paramKey] || { name: paramKey, unit: '' }
+  }
 
   return (
-    <Layout>
+    <Layout title={config?.title} description={config?.description}>
       <div className="space-y-6">
         {/* フィルターセクション */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -59,7 +64,7 @@ function App() {
             />
             
             <ParameterFilter
-              label="同時接続数"
+              label={getParameterInfo('parameter_1').name}
               parameterKey="parameter_1"
               options={availableFilters.parameters.parameter_1 || []}
               selectedValue={filter.parameters.parameter_1 || null}
@@ -69,7 +74,7 @@ function App() {
             />
             
             <ParameterFilter
-              label="ワーカースレッド数"
+              label={getParameterInfo('parameter_2').name}
               parameterKey="parameter_2"
               options={availableFilters.parameters.parameter_2 || []}
               selectedValue={filter.parameters.parameter_2 || null}
@@ -79,7 +84,7 @@ function App() {
             />
             
             <ParameterFilter
-              label="バッチサイズ"
+              label={getParameterInfo('parameter_3').name}
               parameterKey="parameter_3"
               options={availableFilters.parameters.parameter_3 || []}
               selectedValue={filter.parameters.parameter_3 || null}
@@ -113,8 +118,8 @@ function App() {
             {comparison && (
               <DifferenceDisplay
                 comparison={comparison}
-                scenarioALabel={selectedScenario?.scenario_a_name || 'シナリオ A'}
-                scenarioBLabel={selectedScenario?.scenario_b_name || 'シナリオ B'}
+                scenarioALabel={selectedScenario?.target_a_name || '対象 A'}
+                scenarioBLabel={selectedScenario?.target_b_name || '対象 B'}
                 showIndicator
               />
             )}
@@ -131,8 +136,8 @@ function App() {
                   xAxisKey="label"
                   yAxisLabel={`${selectedMetric.name} (${selectedMetric.unit})`}
                   labels={{
-                    scenario_a: selectedScenario?.scenario_a_name || 'シナリオ A',
-                    scenario_b: selectedScenario?.scenario_b_name || 'シナリオ B',
+                    scenario_a: selectedScenario?.target_a_name || '対象 A',
+                    scenario_b: selectedScenario?.target_b_name || '対象 B',
                   }}
                   ariaLabel={`${selectedMetric.name}の比較グラフ`}
                 />
@@ -147,17 +152,26 @@ function App() {
               <DataTable
                 data={filteredData}
                 columns={[
-                  { key: 'parameter_1', label: '同時接続数' },
-                  { key: 'parameter_2', label: 'ワーカースレッド数' },
-                  { key: 'parameter_3', label: 'バッチサイズ' },
+                  { 
+                    key: 'parameter_1', 
+                    label: `${getParameterInfo('parameter_1').name}${getParameterInfo('parameter_1').unit ? ` (${getParameterInfo('parameter_1').unit})` : ''}`
+                  },
+                  { 
+                    key: 'parameter_2', 
+                    label: `${getParameterInfo('parameter_2').name}${getParameterInfo('parameter_2').unit ? ` (${getParameterInfo('parameter_2').unit})` : ''}`
+                  },
+                  { 
+                    key: 'parameter_3', 
+                    label: `${getParameterInfo('parameter_3').name}${getParameterInfo('parameter_3').unit ? ` (${getParameterInfo('parameter_3').unit})` : ''}`
+                  },
                   { 
                     key: `scenario_a_${filter.selectedMetric}`,
-                    label: `${selectedScenario?.scenario_a_name || 'シナリオ A'} (${selectedMetric?.unit})`,
+                    label: `${selectedScenario?.target_a_name || '対象 A'} (${selectedMetric?.unit})`,
                     format: 'number'
                   },
                   { 
                     key: `scenario_b_${filter.selectedMetric}`,
-                    label: `${selectedScenario?.scenario_b_name || 'シナリオ B'} (${selectedMetric?.unit})`,
+                    label: `${selectedScenario?.target_b_name || '対象 B'} (${selectedMetric?.unit})`,
                     format: 'number'
                   },
                 ]}

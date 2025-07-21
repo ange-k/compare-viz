@@ -9,6 +9,14 @@ describe('ScenarioDetail', () => {
     name: 'テストシナリオ',
     file: 'test.csv',
     description: 'これはテストシナリオの詳細な説明です。',
+    target_a_name: '対象A',
+    target_b_name: '対象B',
+    metrics: [
+      { id: 'metric1', name: 'メトリクス1', unit: 'unit', higher_is_better: true }
+    ],
+    parameters: {
+      param1: { name: 'パラメータ1', unit: 'unit' }
+    }
   }
 
   it('シナリオが選択されていない場合、何も表示しない', () => {

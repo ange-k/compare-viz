@@ -1,0 +1,11 @@
+test_condition,connections,threads,query_complexity,postgres_qps,mysql_qps,postgres_latency_p50,mysql_latency_p50,postgres_latency_p99,mysql_latency_p99,postgres_error_rate,mysql_error_rate
+test-001,10,4,simple,5000,4800,2,3,10,12,0.01,0.02
+test-002,50,8,simple,20000,19000,3,4,15,18,0.02,0.03
+test-003,100,16,simple,35000,32000,5,7,20,25,0.03,0.05
+test-004,10,4,complex,2000,2200,10,8,50,40,0.05,0.03
+test-005,50,8,complex,8000,8500,15,12,80,60,0.08,0.06
+test-006,100,16,complex,15000,16000,25,20,120,90,0.12,0.10
+test-007,200,32,simple,50000,45000,8,10,30,40,0.05,0.08
+test-008,200,32,complex,20000,22000,35,30,150,120,0.15,0.12
+test-009,500,64,simple,80000,70000,15,20,60,80,0.10,0.15
+test-010,500,64,complex,30000,32000,60,50,250,200,0.20,0.18

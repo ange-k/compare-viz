@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { applyColumnMapping, normalizeData } from '@/services/data-transformer'
 import type { ICsvRow, IColumnMapping, IYamlConfig } from '@/types'
+import { createMockScenario, createMockMetric, createMockYamlConfig } from '../test-helpers'
 
 describe('データ変換機能', () => {
   describe('applyColumnMapping', () => {
@@ -115,33 +116,31 @@ describe('データ変換機能', () => {
   })
 
   describe('normalizeData', () => {
-    const mockYamlConfig: IYamlConfig = {
+    const mockYamlConfig: IYamlConfig = createMockYamlConfig({
       scenarios: [
-        {
+        createMockScenario({
           id: 'scenario-1',
           name: 'シナリオ1',
           file: 'test.csv',
           description: 'テスト',
-        },
-      ],
-      metrics: [
-        {
-          id: 'throughput',
-          name: 'スループット',
-          scenario_a_column: 'scenario_a_throughput',
-          scenario_b_column: 'scenario_b_throughput',
-          unit: 'req/s',
-        },
-        {
-          id: 'latency',
-          name: 'レイテンシー',
-          scenario_a_column: 'scenario_a_latency',
-          scenario_b_column: 'scenario_b_latency',
-          unit: 'ms',
-        },
+          metrics: [
+            createMockMetric({
+              id: 'throughput',
+              name: 'スループット',
+              unit: 'req/s',
+              higher_is_better: true,
+            }),
+            createMockMetric({
+              id: 'latency',
+              name: 'レイテンシー',
+              unit: 'ms',
+              higher_is_better: false,
+            }),
+          ],
+        }),
       ],
       column_mappings: [],
-    }
+    })
 
     it('マッピングされたデータを正規化できる', () => {
       const mappedData: ICsvRow[] = [

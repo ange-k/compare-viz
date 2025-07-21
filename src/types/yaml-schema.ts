@@ -3,16 +3,22 @@ export interface IScenario {
   name: string
   file: string
   description: string
-  scenario_a_name?: string
-  scenario_b_name?: string
+  target_a_name: string
+  target_b_name: string
+  metrics: IMetric[]
+  parameters: Record<string, IParameterDef>
+}
+
+export interface IParameterDef {
+  name: string
+  unit: string
 }
 
 export interface IMetric {
   id: string
   name: string
-  scenario_a_column: string
-  scenario_b_column: string
   unit: string
+  higher_is_better: boolean
 }
 
 export interface IColumnMapping {
@@ -21,7 +27,8 @@ export interface IColumnMapping {
 }
 
 export interface IYamlConfig {
+  title?: string
+  description?: string
   scenarios: IScenario[]
-  metrics: IMetric[]
   column_mappings: IColumnMapping[]
 }
