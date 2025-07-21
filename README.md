@@ -244,6 +244,74 @@ npm run build
 # The output will be in the dist/ directory
 ```
 
+## Docker Deployment
+
+### Build and Run with Docker
+
+```bash
+# Build Docker image
+docker build -t compare-viz:latest .
+
+# Run container
+docker run -d -p 3000:80 --name compare-viz compare-viz:latest
+
+# Access the application
+# http://localhost:3000
+```
+
+### Using Docker Compose
+
+```bash
+# Start the application
+docker-compose up -d
+
+# Stop the application
+docker-compose down
+```
+
+## Kubernetes Deployment
+
+### Prerequisites
+
+- Kubernetes cluster (1.19+)
+- kubectl configured
+- Ingress controller installed (e.g., nginx-ingress)
+
+### Deploy to Kubernetes
+
+```bash
+# Build and push image to your registry
+docker build -t your-registry/compare-viz:latest .
+docker push your-registry/compare-viz:latest
+
+# Update image in deployment.yaml
+# Edit k8s/deployment.yaml and change image: compare-viz:latest
+# to image: your-registry/compare-viz:latest
+
+# Apply Kubernetes manifests
+kubectl apply -f k8s/
+
+# Check deployment status
+kubectl get pods -l app=compare-viz
+kubectl get svc compare-viz
+kubectl get ingress compare-viz
+```
+
+### Kubernetes Features
+
+- **Auto-scaling**: HPA configured to scale between 2-10 replicas
+- **Health checks**: Liveness and readiness probes
+- **Resource limits**: CPU and memory limits defined
+- **Ingress**: HTTPS support with cert-manager
+- **ConfigMap**: For environment-specific configuration
+
+### Customization
+
+1. **Update domain**: Edit `k8s/ingress.yaml` and replace `compare-viz.example.com` with your domain
+2. **Resource limits**: Adjust CPU/memory in `k8s/deployment.yaml` based on your needs
+3. **Replicas**: Modify min/max replicas in `k8s/hpa.yaml`
+4. **Environment variables**: Add custom configs in `k8s/configmap.yaml`
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

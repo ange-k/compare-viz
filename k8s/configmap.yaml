@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: compare-viz-config
+data:
+  # カスタム設定が必要な場合はここに追加
+  # 例: APIエンドポイントなど
+  # API_ENDPOINT: "https://api.example.com"
