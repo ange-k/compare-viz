@@ -6,6 +6,7 @@ import { transformCsvToNormalizedData } from '@/services/data-transformer'
 import { initializeDuckDB, createTableFromData, executeQuery, closeDuckDB } from '@/services/duckdb-service'
 import { generateFilterQuery, extractAvailableFilters } from '@/services/filter-service'
 import { prepareChartData } from '@/services/chart-service'
+import { resolvePublicPath } from '@/utils/path-utils'
 
 interface UseLoadTestDataReturn {
   config: IYamlConfig | null
@@ -24,7 +25,7 @@ interface UseLoadTestDataReturn {
   updateFilter: (newFilter: Partial<IFilter>) => void
 }
 
-export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTestDataReturn {
+export function useLoadTestData(configPath: string = 'config.yaml'): UseLoadTestDataReturn {
   const [config, setConfig] = useState<IYamlConfig | null>(null)
   const [data, setData] = useState<INormalizedData | null>(null)
   const [filteredData, setFilteredData] = useState<IFlatTestResult[]>([])
@@ -47,7 +48,7 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
         setError(null)
 
         // YAML設定を読み込む
-        const yamlResult = await loadYamlConfig(configPath)
+        const yamlResult = await loadYamlConfig(resolvePublicPath(configPath))
         if (!yamlResult.success) {
           throw yamlResult.error
         }
@@ -56,7 +57,7 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
         // 最初のシナリオのCSVを読み込む
         if (yamlResult.data.scenarios.length > 0) {
           const scenario = yamlResult.data.scenarios[0]
-          const csvResult = await loadCsvFile(`/${scenario.file}`)
+          const csvResult = await loadCsvFile(resolvePublicPath(scenario.file))
           if (!csvResult.success) {
             throw csvResult.error
           }
@@ -185,7 +186,7 @@ export function useLoadTestData(configPath: string = '/config.yaml'): UseLoadTes
         setLoading(true)
         
         // 新しいCSVを読み込む
-        const csvResult = await loadCsvFile(`/${scenario.file}`)
+        const csvResult = await loadCsvFile(resolvePublicPath(scenario.file))
         if (!csvResult.success) {
           throw csvResult.error
         }
