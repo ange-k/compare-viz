@@ -124,26 +124,63 @@ export function transformToMultiSeriesData(
  * @param data フラットなテスト結果データ
  * @param metric メトリクス情報
  * @param groupBy グループ化するパラメータ
+ * @param appliedFilters 適用されているフィルタの情報
  * @returns チャートデータ
  */
 export function prepareChartData(
   data: any[],
   metric: { id: string; name: string; unit: string },
-  groupBy: string
+  groupBy: string,
+  appliedFilters?: { parameter_1?: number | null; parameter_2?: number | null; parameter_3?: number | null }
 ): TResultStatus<any[]> {
   try {
+    // フィルタが適用されているパラメータを確認
+    const filteredParams = appliedFilters ? Object.entries(appliedFilters)
+      .filter(([_, value]) => value !== null && value !== undefined)
+      .map(([key, _]) => key) : []
+
+    // グループ化するパラメータがフィルタされている場合の警告（test_conditionは除外）
+    if (groupBy !== 'test_condition' && filteredParams.includes(groupBy)) {
+      console.warn(`Grouping by ${groupBy} which is already filtered`)
+    }
+
     // パラメータでグループ化
-    const grouped = new Map<number, any[]>()
+    const grouped = new Map<string, any[]>()
     data.forEach(row => {
       const key = row[groupBy]
-      if (!grouped.has(key)) {
-        grouped.set(key, [])
+      if (key !== undefined && key !== null) {
+        const keyStr = key.toString()
+        if (!grouped.has(keyStr)) {
+          grouped.set(keyStr, [])
+        }
+        grouped.get(keyStr)!.push(row)
       }
-      grouped.get(key)!.push(row)
     })
 
+    // グループが1つしかない場合、他のパラメータの組み合わせでグループ化（test_conditionを除く）
+    if (groupBy !== 'test_condition' && grouped.size <= 1 && filteredParams.length > 0) {
+      // フィルタされていない他のパラメータの値を表示用に使用
+      const otherParams = ['parameter_1', 'parameter_2', 'parameter_3']
+        .filter(p => p !== groupBy && !filteredParams.includes(p))
+      
+      if (otherParams.length > 0) {
+        // 詳細なラベルを作成
+        grouped.clear()
+        data.forEach(row => {
+          const mainKey = row[groupBy]
+          const otherValues = otherParams.map(p => `${p.replace('parameter_', 'P')}=${row[p]}`).join(', ')
+          const compositeKey = `${groupBy.replace('parameter_', 'P')}=${mainKey}${otherValues ? ' (' + otherValues + ')' : ''}`
+          
+          if (!grouped.has(compositeKey)) {
+            grouped.set(compositeKey, [])
+          }
+          grouped.get(compositeKey)!.push(row)
+        })
+      }
+    }
+
     // 各グループの平均値を計算
-    const chartData = Array.from(grouped.entries()).map(([paramValue, rows]) => {
+    const chartData = Array.from(grouped.entries()).map(([label, rows]) => {
       const scenarioAKey = `scenario_a_${metric.id}`
       const scenarioBKey = `scenario_b_${metric.id}`
       
@@ -151,15 +188,30 @@ export function prepareChartData(
       const avgB = rows.reduce((sum, row) => sum + (row[scenarioBKey] || 0), 0) / rows.length
       
       return {
-        label: paramValue.toString(),
+        label,
         scenario_a: avgA,
         scenario_b: avgB,
-        [groupBy]: paramValue,
+        _sortKey: groupBy === 'test_condition' ? label : rows[0][groupBy], // ソート用の値を保持
       }
     })
 
-    // ラベルでソート
-    chartData.sort((a, b) => Number(a.label) - Number(b.label))
+    // ソート処理
+    chartData.sort((a, b) => {
+      // test_conditionの場合は文字列としてソート
+      if (groupBy === 'test_condition') {
+        return a.label.localeCompare(b.label)
+      }
+      // パラメータの場合は数値でソート
+      const aNum = Number(a._sortKey)
+      const bNum = Number(b._sortKey)
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return aNum - bNum
+      }
+      return a.label.localeCompare(b.label)
+    })
+
+    // ソート用のキーを削除
+    chartData.forEach(item => delete item._sortKey)
 
     return {
       success: true,

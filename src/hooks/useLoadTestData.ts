@@ -37,6 +37,7 @@ export function useLoadTestData(configPath: string = 'config.yaml'): UseLoadTest
     selectedScenario: '',
     selectedMetric: '',
     parameters: {},
+    chartXAxis: 'test_condition',
   })
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
@@ -160,7 +161,8 @@ export function useLoadTestData(configPath: string = 'config.yaml'): UseLoadTest
           const chartResult = prepareChartData(
             queryResult.data as any,
             metric!,
-            'parameter_1'
+            filter.chartXAxis || 'test_condition',
+            filter.parameters
           )
           if (chartResult.success) {
             setChartData(chartResult.data)

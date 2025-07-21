@@ -11,6 +11,7 @@ export interface IFilter {
     parameter_3?: number | null
     [key: string]: number | null | undefined
   }
+  chartXAxis?: string  // チャートの横軸パラメータ
 }
 
 // グラフ表示用データ

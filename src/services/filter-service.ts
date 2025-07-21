@@ -34,7 +34,7 @@ export function extractAvailableFilters(
       metrics,
       testConditions,
     }
-  } catch (error) {
+  } catch {
     // エラー時はデフォルト値を返す
     return {
       parameters: {},

@@ -14,6 +14,7 @@ interface BarChartProps {
   data: IChartDataPoint[]
   dataKeys: string[]
   xAxisKey: string
+  xAxisLabel?: string
   yAxisLabel: string
   colors?: Record<string, string>
   labels?: Record<string, string>
@@ -30,6 +31,7 @@ export function BarChart({
   data,
   dataKeys,
   xAxisKey,
+  xAxisLabel,
   yAxisLabel,
   colors = DEFAULT_COLORS,
   labels = {},
@@ -47,12 +49,18 @@ export function BarChart({
   return (
     <div role="img" aria-label={ariaLabel}>
       <ResponsiveContainer width="100%" height={height}>
-        <RechartsBarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <RechartsBarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: xAxisLabel ? 50 : 20 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
           <XAxis 
             dataKey={xAxisKey}
             className="text-xs"
             tick={{ fill: 'currentColor' }}
+            label={xAxisLabel ? { 
+              value: xAxisLabel, 
+              position: 'insideBottom',
+              offset: -10,
+              style: { textAnchor: 'middle', fill: 'currentColor', fontSize: '14px' }
+            } : undefined}
           />
           <YAxis 
             label={{ 

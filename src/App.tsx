@@ -5,6 +5,7 @@ import { ScenarioSelector } from '@/components/filters/ScenarioSelector'
 import { ScenarioDetail } from '@/components/filters/ScenarioDetail'
 import { ParameterFilter } from '@/components/filters/ParameterFilter'
 import { MetricSelector } from '@/components/filters/MetricSelector'
+import { ChartAxisSelector } from '@/components/filters/ChartAxisSelector'
 import { DataTable } from '@/components/data-display/DataTable'
 import { BarChart } from '@/components/charts/BarChart'
 import { DifferenceDisplay } from '@/components/data-display/DifferenceDisplay'
@@ -121,19 +122,49 @@ function App() {
                 scenarioALabel={selectedScenario?.target_a_name || '対象 A'}
                 scenarioBLabel={selectedScenario?.target_b_name || '対象 B'}
                 showIndicator
+                higherIsBetter={selectedMetric?.higher_is_better ?? true}
               />
             )}
 
             {/* グラフ */}
             {chartData.length > 0 && selectedMetric && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                  {selectedMetric.name}の比較
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {selectedMetric.name}の比較
+                  </h3>
+                  <ChartAxisSelector
+                    selectedAxis={filter.chartXAxis || 'test_condition'}
+                    onAxisChange={(axis) => updateFilter({ chartXAxis: axis })}
+                    parameters={[
+                      { key: 'test_condition', name: 'テスト条件' },
+                      { key: 'parameter_1', name: getParameterInfo('parameter_1').name },
+                      { key: 'parameter_2', name: getParameterInfo('parameter_2').name },
+                      { key: 'parameter_3', name: getParameterInfo('parameter_3').name },
+                    ]}
+                  />
+                </div>
+                
+                {/* フィルタされたパラメータを横軸に選択した場合の警告 */}
+                {filter.chartXAxis !== 'test_condition' &&
+                 filter.parameters[filter.chartXAxis || 'test_condition'] !== null && 
+                 filter.parameters[filter.chartXAxis || 'test_condition'] !== undefined && (
+                  <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      ⚠️ 横軸に選択されたパラメータ「{getParameterInfo(filter.chartXAxis || 'test_condition').name}」は
+                      現在フィルタで{filter.parameters[filter.chartXAxis || 'test_condition']}に固定されています。
+                      グラフに1つのポイントのみ表示される場合があります。
+                    </p>
+                  </div>
+                )}
+                
                 <BarChart
                   data={chartData}
                   dataKeys={['scenario_a', 'scenario_b']}
                   xAxisKey="label"
+                  xAxisLabel={filter.chartXAxis === 'test_condition' 
+                    ? 'テスト条件' 
+                    : `${getParameterInfo(filter.chartXAxis || 'test_condition').name}${getParameterInfo(filter.chartXAxis || 'test_condition').unit ? ` (${getParameterInfo(filter.chartXAxis || 'test_condition').unit})` : ''}`}
                   yAxisLabel={`${selectedMetric.name} (${selectedMetric.unit})`}
                   labels={{
                     scenario_a: selectedScenario?.target_a_name || '対象 A',

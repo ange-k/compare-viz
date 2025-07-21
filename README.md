@@ -7,6 +7,7 @@ A flexible web application for comparing and visualizing performance metrics bet
 - 📊 **Flexible Comparison**: Compare performance between any two systems (A/B)
 - 📈 **Multiple Metrics**: Support for various metrics like throughput, latency, error rates
 - 🔍 **Dynamic Filtering**: Filter data based on parameters
+- 📉 **Interactive Charts**: Visualize data with customizable x-axis (test conditions or parameters)
 - 📱 **Responsive Design**: Works on desktop, tablet, and mobile
 - 🌙 **Dark Mode**: Easy on the eyes with dark mode support
 - 🔧 **YAML Configuration**: Easy setup through YAML configuration files
