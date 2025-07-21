@@ -194,7 +194,7 @@ function isValidParameters(parameters: unknown): boolean {
   const params = parameters as Record<string, unknown>
   
   // 各パラメータが正しい形式か確認
-  for (const [key, value] of Object.entries(params)) {
+  for (const value of Object.values(params)) {
     if (typeof value !== 'object' || value === null) {
       return false
     }

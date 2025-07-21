@@ -5,8 +5,8 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // GitHub Pagesでホストする場合は、リポジトリ名をbaseに設定
-  // 例: https://username.github.io/csv-compare/ の場合は '/csv-compare/'
-  const base = mode === 'production' ? '/csv-compare/' : '/'
+  // 例: https://username.github.io/compare-viz/ の場合は '/compare-viz/'
+  const base = mode === 'production' ? '/compare-viz/' : '/'
   
   return {
     base,
