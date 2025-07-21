@@ -1,0 +1,52 @@
+scenarios:
+  - id: load-test-comparison
+    name: 負荷試験シナリオ比較
+    file: data/load_test_results.csv
+    description: 2つの実装パターンの負荷試験結果を比較
+    scenario_a_name: 実装パターンA
+    scenario_b_name: 実装パターンB（最適化版）
+
+metrics:
+  - id: throughput
+    name: スループット
+    scenario_a_column: "Scenario A - Throughput"
+    scenario_b_column: "Scenario B - Throughput"
+    unit: req/s
+    higher_is_better: true
+  - id: latency
+    name: レイテンシー
+    scenario_a_column: "Scenario A - Latency"
+    scenario_b_column: "Scenario B - Latency"
+    unit: ms
+    higher_is_better: false
+  - id: error_rate
+    name: エラー率
+    scenario_a_column: "Scenario A - Error Rate"
+    scenario_b_column: "Scenario B - Error Rate"
+    unit: "%"
+    higher_is_better: false
+
+column_mappings:
+  - file: data/load_test_results.csv
+    mappings:
+      test_condition: test_condition
+      parameter_1: parameter_1
+      parameter_2: parameter_2
+      parameter_3: parameter_3
+      scenario_a_throughput: "Scenario A - Throughput"
+      scenario_b_throughput: "Scenario B - Throughput"
+      scenario_a_latency: "Scenario A - Latency"
+      scenario_b_latency: "Scenario B - Latency"
+      scenario_a_error_rate: "Scenario A - Error Rate"
+      scenario_b_error_rate: "Scenario B - Error Rate"
+
+parameters:
+  parameter_1:
+    name: 同時接続数
+    unit: connections
+  parameter_2:
+    name: ワーカースレッド数
+    unit: threads
+  parameter_3:
+    name: バッチサイズ
+    unit: items
