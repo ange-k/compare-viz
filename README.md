@@ -1,56 +1,68 @@
-# システム性能比較ダッシュボード
+# Compare-Viz
 
-異なるシステムやツールの性能を比較・可視化するためのWebアプリケーションです。
+A flexible web application for comparing and visualizing performance metrics between two systems or tools.
 
-## 特徴
+## Features
 
-- 📊 **柔軟な比較**: 任意の2つのシステム（A/B）の性能を比較
-- 📈 **多様なメトリクス**: スループット、レイテンシー、エラー率など様々な指標に対応
-- 🔍 **動的フィルタリング**: パラメータに基づいてデータを絞り込み
-- 📱 **レスポンシブデザイン**: PC・タブレット・スマートフォンに対応
-- 🌙 **ダークモード対応**: 目に優しい表示切り替え
+- 📊 **Flexible Comparison**: Compare performance between any two systems (A/B)
+- 📈 **Multiple Metrics**: Support for various metrics like throughput, latency, error rates
+- 🔍 **Dynamic Filtering**: Filter data based on parameters
+- 📱 **Responsive Design**: Works on desktop, tablet, and mobile
+- 🌙 **Dark Mode**: Easy on the eyes with dark mode support
+- 🔧 **YAML Configuration**: Easy setup through YAML configuration files
 
-## 使い方
+## Quick Start
 
-### 1. 設定ファイルの準備
+### 1. Configure Your Dashboard
 
-`public/config.yaml`でダッシュボードの設定を行います：
+Edit `public/config.yaml` to set up your dashboard:
 
 ```yaml
-title: システム性能比較ダッシュボード
-description: 異なるシステムやツールの性能を比較・可視化
+title: System Performance Comparison Dashboard
+description: Compare and visualize performance between different systems
 
 scenarios:
   - id: pulsar-vs-kafka
-    name: メッセージングシステム比較
+    name: Messaging Systems Comparison
     file: data/pulsar_vs_kafka.csv
-    description: Apache Pulsar と Apache Kafka の比較
+    description: Compare Apache Pulsar vs Apache Kafka performance
     target_a_name: Apache Pulsar
     target_b_name: Apache Kafka
     metrics:
       - id: produce_rate
-        name: プロデュースレート
+        name: Produce Rate
         unit: msg/s
         higher_is_better: true
+      - id: latency_p50
+        name: Latency (P50)
+        unit: ms
+        higher_is_better: false
     parameters:
       parameter_1:
-        name: プロデューサー数
+        name: Producers
         unit: instances
+      parameter_2:
+        name: Consumers
+        unit: instances
+      parameter_3:
+        name: Partitions
+        unit: partitions
 ```
 
-### 2. データファイルの準備
+### 2. Prepare Your Data
 
-`public/data/`ディレクトリにCSVファイルを配置します：
+Place your CSV files in the `public/data/` directory:
 
 ```csv
 test_condition,producers,consumers,partitions,pulsar_produce_rate,kafka_produce_rate,pulsar_latency_p50,kafka_latency_p50
 test-001,1,1,1,10000,9500,5,7
 test-002,2,2,4,40000,38000,6,8
+test-003,4,4,8,75000,70000,7,10
 ```
 
-### 3. カラムマッピングの設定
+### 3. Define Column Mappings
 
-CSVのカラム名と内部で使用する名前をマッピングします：
+Map your CSV columns to internal parameter names:
 
 ```yaml
 column_mappings:
@@ -62,117 +74,179 @@ column_mappings:
       parameter_3: partitions
       scenario_a_produce_rate: pulsar_produce_rate
       scenario_b_produce_rate: kafka_produce_rate
+      scenario_a_latency_p50: pulsar_latency_p50
+      scenario_b_latency_p50: kafka_latency_p50
 ```
 
-## 設定項目の詳細
+## Configuration Reference
 
-### グローバル設定
+### Global Settings
 
-| 項目 | 説明 | 必須 |
-|------|------|------|
-| `title` | ダッシュボードのタイトル | ❌ |
-| `description` | ダッシュボードの説明 | ❌ |
+| Field | Description | Required |
+|-------|-------------|----------|
+| `title` | Dashboard title | No |
+| `description` | Dashboard description | No |
 
-### シナリオ設定
+### Scenario Configuration
 
-| 項目 | 説明 | 必須 |
-|------|------|------|
-| `id` | シナリオの一意識別子 | ✅ |
-| `name` | シナリオの表示名 | ✅ |
-| `file` | CSVファイルのパス | ✅ |
-| `description` | シナリオの説明 | ✅ |
-| `target_a_name` | 比較対象Aの名前 | ✅ |
-| `target_b_name` | 比較対象Bの名前 | ✅ |
-| `metrics` | メトリクスの配列 | ✅ |
-| `parameters` | パラメータの定義 | ✅ |
+| Field | Description | Required |
+|-------|-------------|----------|
+| `id` | Unique scenario identifier | Yes |
+| `name` | Display name for the scenario | Yes |
+| `file` | Path to CSV file | Yes |
+| `description` | Scenario description | Yes |
+| `target_a_name` | Name of system/tool A | Yes |
+| `target_b_name` | Name of system/tool B | Yes |
+| `metrics` | Array of metrics | Yes |
+| `parameters` | Parameter definitions | Yes |
 
-### メトリクス設定
+### Metric Configuration
 
-| 項目 | 説明 | 必須 |
-|------|------|------|
-| `id` | メトリクスの一意識別子 | ✅ |
-| `name` | メトリクスの表示名 | ✅ |
-| `unit` | 単位（例: ms, req/s, %） | ✅ |
-| `higher_is_better` | 値が高いほど良いか | ✅ |
+| Field | Description | Required |
+|-------|-------------|----------|
+| `id` | Unique metric identifier | Yes |
+| `name` | Display name for the metric | Yes |
+| `unit` | Unit of measurement (e.g., ms, req/s, %) | Yes |
+| `higher_is_better` | Whether higher values are better | Yes |
 
-### パラメータ設定
+### Parameter Configuration
 
-パラメータは`parameter_1`〜`parameter_3`の3つまで設定可能です：
+You can define up to 3 parameters (`parameter_1`, `parameter_2`, `parameter_3`):
 
 ```yaml
 parameters:
   parameter_1:
-    name: パラメータの表示名
-    unit: 単位
+    name: Display name
+    unit: Unit of measurement
 ```
 
-## 開発
+## Development
 
-### 環境構築
+### Prerequisites
+
+- Node.js 20.19.0 or higher
+- npm or yarn
+
+### Setup
 
 ```bash
-# 依存関係のインストール
+# Install dependencies
 npm install
 
-# 開発サーバーの起動
+# Start development server
 npm run dev
+
+# Open http://localhost:3000
 ```
 
-### ビルド
+### Build
 
 ```bash
-# プロダクションビルド
+# Build for production
 npm run build
 
-# ビルド結果のプレビュー
+# Preview production build
 npm run preview
 ```
 
-### テスト
+### Testing
 
 ```bash
-# 単体テストの実行
+# Run tests
 npm test
 
-# ウォッチモード
+# Run tests in watch mode
 npm run test:watch
 
-# カバレッジレポート
+# Generate coverage report
 npm run test:coverage
 ```
 
-## 使用例
+## Use Cases
 
-### 例1: データベース性能比較
+### Database Performance Comparison
 
-PostgreSQLとMySQLの性能を比較する場合：
+Compare PostgreSQL vs MySQL:
+- Parameters: connections, threads, query complexity
+- Metrics: queries per second, latency, error rate
 
-1. CSVファイルを準備（`database_comparison.csv`）
-2. YAMLでシナリオを定義
-3. パラメータとして接続数、スレッド数、クエリ複雑度を設定
-4. メトリクスとしてQPS、レイテンシー、エラー率を定義
+### Web Server Comparison
 
-### 例2: Webサーバー比較
+Compare Nginx vs Apache:
+- Parameters: concurrent connections, request size
+- Metrics: response time, throughput, CPU usage
 
-NginxとApacheの性能を比較する場合：
+### Message Queue Comparison
 
-1. 負荷試験の結果をCSVで保存
-2. パラメータとして同時接続数、リクエストサイズを設定
-3. メトリクスとしてレスポンスタイム、スループットを定義
+Compare RabbitMQ vs Kafka:
+- Parameters: producers, consumers, message size
+- Metrics: throughput, latency, memory usage
 
-## トラブルシューティング
+## Architecture
 
-### データが表示されない
+- **Frontend**: React + TypeScript + Vite
+- **UI Components**: Custom components with Tailwind CSS
+- **Charts**: Recharts for data visualization
+- **Data Processing**: DuckDB WASM for in-browser SQL queries
+- **Configuration**: YAML-based configuration
 
-1. ブラウザの開発者ツールでエラーを確認
-2. CSVファイルのパスが正しいか確認
-3. カラムマッピングが正しいか確認
+## Troubleshooting
 
-### メトリクスが0として表示される
+### Data Not Showing
 
-1. CSVのカラム名とマッピングが一致しているか確認
-2. 数値データが正しい形式か確認（カンマ区切りなど）
+1. Check browser console for errors
+2. Verify CSV file path is correct
+3. Ensure column mappings match CSV headers
 
-## ライセンス
+### Metrics Showing as Zero
+
+1. Check if CSV column names match the mappings
+2. Verify numeric data format (no commas in numbers)
+3. Ensure metric IDs in mappings match metric definitions
+
+### Performance Issues
+
+1. Reduce the number of data points in CSV
+2. Use filtering to limit displayed data
+3. Check browser memory usage
+
+## Deployment
+
+### GitHub Pages
+
+1. Update the base path in `vite.config.ts`:
+   ```typescript
+   const base = mode === 'production' ? '/your-repo-name/' : '/'
+   ```
+
+2. Enable GitHub Pages in your repository:
+   - Go to Settings → Pages
+   - Source: Deploy from a branch
+   - Branch: Select `gh-pages` (will be created by GitHub Actions)
+
+3. Push to main branch:
+   ```bash
+   git push origin main
+   ```
+
+4. GitHub Actions will automatically build and deploy to:
+   ```
+   https://[username].github.io/[repository-name]/
+   ```
+
+### Manual Build
+
+```bash
+# Build for production
+npm run build
+
+# The output will be in the dist/ directory
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
 
 MIT License

@@ -3,14 +3,28 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 3000,
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  // GitHub Pagesでホストする場合は、リポジトリ名をbaseに設定
+  // 例: https://username.github.io/csv-compare/ の場合は '/csv-compare/'
+  const base = mode === 'production' ? '/csv-compare/' : '/'
+  
+  return {
+    base,
+    plugins: [react()],
+    server: {
+      port: 3000,
     },
-  },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    publicDir: 'public',
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      // publicディレクトリの内容を確実にコピー
+      copyPublicDir: true,
+    },
+  }
 })
