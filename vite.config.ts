@@ -7,7 +7,9 @@ export default defineConfig(({ mode }) => {
   // GitHub Pagesでホストする場合は、リポジトリ名をbaseに設定
   // 例: https://username.github.io/compare-viz/ の場合は '/compare-viz/'
   // Docker環境では VITE_BASE_URL 環境変数を使用
-  const base = process.env.VITE_BASE_URL || (mode === 'production' ? '/compare-viz/' : '/')
+  const base = process.env.VITE_BASE_URL !== undefined 
+    ? process.env.VITE_BASE_URL 
+    : (mode === 'production' ? '/compare-viz/' : '/')
   
   return {
     base,
