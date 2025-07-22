@@ -3,7 +3,7 @@ import type { IYamlConfig, INormalizedData, IFilter, IFlatTestResult, IAggregate
 import { loadYamlConfig } from '@/services/yaml-loader'
 import { loadCsvFile } from '@/services/csv-loader'
 import { transformCsvToNormalizedData } from '@/services/data-transformer'
-import { initializeDuckDB, createTableFromData, executeQuery, closeDuckDB } from '@/services/duckdb-service'
+import { initializeDuckDB, createTableFromData, executeQuery, closeDuckDB, dropTable } from '@/services/duckdb-service'
 import { generateFilterQuery, extractAvailableFilters } from '@/services/filter-service'
 import { prepareChartData } from '@/services/chart-service'
 import { resolvePublicPath } from '@/utils/path-utils'
@@ -187,6 +187,9 @@ export function useLoadTestData(configPath: string = 'config.yaml'): UseLoadTest
       try {
         setLoading(true)
         
+        // 古いテーブルをクリア
+        await dropTable('test_data')
+        
         // 新しいCSVを読み込む
         const csvResult = await loadCsvFile(resolvePublicPath(scenario.file))
         if (!csvResult.success) {
@@ -205,10 +208,15 @@ export function useLoadTestData(configPath: string = 'config.yaml'): UseLoadTest
         
         setData(transformResult.data)
         
-        // シナリオのメトリクスから最初のメトリクスを選択
-        if (scenario.metrics.length > 0 && !scenario.metrics.find(m => m.id === filter.selectedMetric)) {
-          setFilter(prev => ({ ...prev, selectedMetric: scenario.metrics[0].id }))
-        }
+        // シナリオ変更時はパラメータフィルタをリセットし、メトリクスを再選択
+        setFilter(prev => ({
+          ...prev,
+          selectedMetric: scenario.metrics.find(m => m.id === prev.selectedMetric) 
+            ? prev.selectedMetric 
+            : scenario.metrics[0]?.id || '',
+          parameters: {}, // パラメータフィルタをリセット
+          chartXAxis: 'test_condition', // 横軸もリセット
+        }))
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to load scenario data'))
       } finally {
@@ -217,7 +225,7 @@ export function useLoadTestData(configPath: string = 'config.yaml'): UseLoadTest
     }
     
     loadScenarioData()
-  }, [config, filter.selectedScenario, isInitialLoad])
+  }, [config, filter.selectedScenario, isInitialLoad]) // filter.selectedMetricは意図的に除外（無限ループ防止）
 
   // フィルター更新
   const updateFilter = (newFilter: Partial<IFilter>) => {

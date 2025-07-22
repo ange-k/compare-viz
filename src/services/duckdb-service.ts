@@ -152,6 +152,7 @@ export async function createTableFromData(
         const vals = Object.keys(firstRow).map(col => {
           const val = row[col]
           if (val === null || val === undefined) return 'NULL'
+          if (typeof val === 'number' && isNaN(val)) return 'NULL'
           if (typeof val === 'string') return `'${String(val).replace(/'/g, "''")}'`
           return String(val)
         })
@@ -204,6 +205,26 @@ export async function executeQuery<T = unknown>(
         }`
       ),
     }
+  }
+}
+
+/**
+ * テーブルを削除
+ * @param tableName テーブル名
+ */
+export async function dropTable(tableName: string): Promise<void> {
+  try {
+    if (!conn) return
+    
+    // テーブル名のバリデーション
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)) {
+      console.error('Invalid table name for drop:', tableName)
+      return
+    }
+    
+    await conn.query(`DROP TABLE IF EXISTS ${tableName}`)
+  } catch (error) {
+    console.error('Error dropping table:', error)
   }
 }
 
